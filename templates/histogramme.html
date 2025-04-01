@@ -1,89 +1,48 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Histogramme des Températures - Tawarano</title>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Évolution des Températures - Tawarano</title>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-        google.charts.load("current", {packages:["corechart"]});
-        google.charts.setOnLoadCallback(drawChart);
-
-        function drawChart() {
-            var rawData = {
-                "results": [
-                    {"Jour": 1485799200, "temp": 10.61},
-                    {"Jour": 1485810000, "temp": 9.41},
-                    {"Jour": 1485820800, "temp": 9.15},
-                    {"Jour": 1485831600, "temp": 9.12},
-                    {"Jour": 1485842400, "temp": 9.506},
-                    {"Jour": 1485853200, "temp": 9.633},
-                    {"Jour": 1485864000, "temp": 10.185},
-                    {"Jour": 1485874800, "temp": 11.507},
-                    {"Jour": 1485885600, "temp": 10.945},
-                    {"Jour": 1485896400, "temp": 10.061},
-                    {"Jour": 1485907200, "temp": 11.029},
-                    {"Jour": 1485918000, "temp": 11.679},
-                    {"Jour": 1485928800, "temp": 12.552},
-                    {"Jour": 1485939600, "temp": 12.344},
-                    {"Jour": 1485950400, "temp": 12.01},
-                    {"Jour": 1485961200, "temp": 11.011},
-                    {"Jour": 1485972000, "temp": 9.48},
-                    {"Jour": 1485982800, "temp": 8.706},
-                    {"Jour": 1485993600, "temp": 8.828},
-                    {"Jour": 1486004400, "temp": 10.556},
-                    {"Jour": 1486015200, "temp": 11.975},
-                    {"Jour": 1486026000, "temp": 11.605},
-                    {"Jour": 1486036800, "temp": 10.615},
-                    {"Jour": 1486047600, "temp": 10.659},
-                    {"Jour": 1486058400, "temp": 10.638},
-                    {"Jour": 1486069200, "temp": 10.419},
-                    {"Jour": 1486080000, "temp": 10.96},
-                    {"Jour": 1486090800, "temp": 11.884},
-                    {"Jour": 1486101600, "temp": 13.008},
-                    {"Jour": 1486112400, "temp": 12.988},
-                    {"Jour": 1486123200, "temp": 12.802},
-                    {"Jour": 1486134000, "temp": 12.678},
-                    {"Jour": 1486144800, "temp": 12.018},
-                    {"Jour": 1486155600, "temp": 10.668},
-                    {"Jour": 1486166400, "temp": 10.007},
-                    {"Jour": 1486177200, "temp": 10.344},
-                    {"Jour": 1486188000, "temp": 12.113},
-                    {"Jour": 1486198800, "temp": 12.777},
-                    {"Jour": 1486209600, "temp": 12.756},
-                    {"Jour": 1486220400, "temp": 12.36}
-                ]
-            };
-
-            // Conversion des timestamps UNIX en dates lisibles
-            var data = new google.visualization.DataTable();
-            data.addColumn('string', 'Date'); // X-axis: Date
-            data.addColumn('number', 'Température (°C)'); // Y-axis: Température
-
-            rawData.results.forEach(entry => {
-                var date = new Date(entry.Jour * 1000); // Convertir UNIX timestamp en millisecondes
-                var formattedDate = date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
-                data.addRow([formattedDate, entry.temp]);
-            });
-
-            // Options de l'histogramme
-            var options = {
-                title: 'Évolution des Températures à Tawarano',
-                legend: { position: "none" },
-                hAxis: { title: 'Date' },
-                vAxis: { title: 'Température (°C)' },
-                colors: ['#4285F4'],
-                bar: { groupWidth: "75%" }
-            };
-
-            // Dessiner l'histogramme
-            var chart = new google.visualization.ColumnChart(document.getElementById("chart_div"));
-            chart.draw(data, options);
-        }
-    </script>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Histogramme des Températures - Tawarano</h1>
     <div id="chart_div" style="width: 100%; height: 500px;"></div>
-</body>
+
+    <script>
+      google.charts.load('current', { packages: ['corechart'] });
+      google.charts.setOnLoadCallback(fetchDataAndDrawChart);
+
+      function fetchDataAndDrawChart() {
+        fetch('/tawarano/')
+          .then(response => response.json())
+          .then(data => drawChart(data))
+          .catch(error => console.error('Erreur lors du chargement des données :', error));
+      }
+
+      function drawChart(data) {
+        var dataTable = new google.visualization.DataTable();
+        dataTable.addColumn('string', 'Date');
+        dataTable.addColumn('number', 'Température (°C)');
+
+        // Conversion des timestamps en dates lisibles
+        data.results.forEach(entry => {
+          var date = new Date(entry.Jour * 1000);
+          var formattedDate = date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+          dataTable.addRow([formattedDate, entry.temp]);
+        });
+
+        var options = {
+          title: 'Évolution des Températures - Tawarano',
+          hAxis: { title: 'Date' },
+          vAxis: { title: 'Température (°C)' },
+          legend: { position: "none" },
+          colors: ['#4285F4'],
+          bar: { groupWidth: "75%" }
+        };
+
+        var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+        chart.draw(dataTable, options);
+      }
+    </script>
+  </body>
 </html>
